@@ -1,0 +1,647 @@
+1. ASK
+What is the business task?
+
+The company's finance analysts have concluded that annual members are much more profitable than casual riders. Although the pricing flexibility helps Cyclistic attract
+more customers, they believe that maximizing the number of annual members will be key to future growth. Rather than creating a marketing campaign that targets all-new 
+customers, our manager believes there is a very good chance to convert casual riders into members. She notes that casual riders are already aware of the Cyclistic 
+program and have chosen Cyclistic for their mobility needs.
+
+The manager has set set a clear goal: Design marketing strategies aimed at converting casual riders into annual members. In order to do that, however, the marketing 
+analyst team needs to better understand how annual members and casual riders differ, why casual riders would buy a membership, and how digital media could affect their
+marketing tactics. The marketing team is interested in analyzing the Cyclistic historical bike trip data to identify trends.
+
+BUSINESS TASK: Three questions will guide the future marketing program:
+
+How do annual members and casual riders use Cyclistic bikes differently?
+Why would casual riders buy Cyclistic annual memberships?
+How can Cyclistic use digital media to influence casual riders to become members?
+2. PREPARE
+For this case study, I used 12 months of Cyclistic's 2021 bike ride data from the Divvy database here. The trip data used is from Jan 2021 to Dec 2021, and has been 
+made available by Motivate International Inc. under this license.
+
+IS THE DATA ROCCC?
+
+Reliable - YES, data is accurate, complete, and unbiased
+Original - YES, we can locate the original, public data source
+Comprehensive - YES, information is complete and extensive
+Current - YES, data is updated monthly
+Cited - YES
+So the data is reliable, original, comprehensive, current, and cited.
+
+HOW IS THE DATA ORGANIZED?
+
+Using Excel to take an initial look at the data, we can see that each month of data contains over 100,000 rows, and 13 columns of bike trip information:
+
+ride_id
+rideable_type
+started_at
+ended_at
+start_station_name
+start_station_id
+end_station_name
+end_station_id
+start_lat
+start_lng
+end_lat
+end_lng
+member_casual
+I then used Conditional Formatting in Excel to highlight all the blanks in each month's dataset, and we can see there are a lot of cells that contain blanks/null data. This is noted for when I clean the data in BigQuery.
+
+3. PROCESS
+I decided to use BigQuery to clean the data and make it usable, since that is the SQL program that was taught in the Google Data Analytics program. I imported the 12 
+CSV files into BigQuery and named them corresponding to the appropriate months (Jan 2021, Feb 2021, etc.).
+
+I then used the SQL function "UNION ALL" to combine the 12 datasets into one table called "data12months":
+
+CREATE TABLE exalted-iridium-363822.Bikesharing.data12months AS
+SELECT *
+FROM (
+  SELECT *
+  FROM `exalted-iridium-363822.Bikesharing.Jan 2021`
+  UNION ALL
+  SELECT *
+  FROM `exalted-iridium-363822.Bikesharing.Feb 2021`
+  UNION ALL
+  SELECT *
+  FROM `exalted-iridium-363822.Bikesharing.March 2021`
+  UNION ALL
+  SELECT *
+  FROM `exalted-iridium-363822.Bikesharing.April 2021`
+  UNION ALL
+  SELECT *
+  FROM `exalted-iridium-363822.Bikesharing.May 2021`
+  UNION ALL
+  SELECT *
+  FROM `exalted-iridium-363822.Bikesharing.June 2021`
+  UNION ALL
+  SELECT *
+  FROM `exalted-iridium-363822.Bikesharing.July 2021`
+  UNION ALL
+  SELECT *
+  FROM `exalted-iridium-363822.Bikesharing.Aug 2021`
+  UNION ALL
+  SELECT *
+  FROM `exalted-iridium-363822.Bikesharing.Sept 2021`
+  UNION ALL
+  SELECT *
+  FROM `exalted-iridium-363822.Bikesharing.Oct 2021`
+  UNION ALL
+  SELECT *
+  FROM `exalted-iridium-363822.Bikesharing.Nov 2021`
+  UNION ALL
+  SELECT *
+  FROM `exalted-iridium-363822.Bikesharing.Dec 2021`
+  ORDER BY started_at
+);
+
+SELECT *
+FROM `exalted-iridium-363822.Bikesharing.data12months`;
+The resulting table had 5,595,063 rows.
+
+Now from our scan of the data in Excel, we know there are a lot of null cells, so we can run a query to see how many cells in each column contain nulls:
+
+SELECT COUNT(*) 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months` 
+
+WHERE ride_id IS NULL 
+
+ 
+
+SELECT COUNT(*) 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months` 
+
+WHERE rideable_type IS NULL 
+
+ 
+
+SELECT COUNT(*) 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months` 
+
+WHERE started_at IS NULL 
+
+ 
+
+SELECT COUNT(*) 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months` 
+
+WHERE ended_at IS NULL 
+
+ 
+
+SELECT COUNT(*) 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months` 
+
+WHERE start_station_name IS NULL 
+
+ 
+
+SELECT COUNT(*) 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months` 
+
+WHERE start_station_id IS NULL 
+
+ 
+
+SELECT COUNT(*) 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months` 
+
+WHERE end_station_name IS NULL 
+
+ 
+
+SELECT COUNT(*) 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months` 
+
+WHERE end_station_id IS NULL 
+
+ 
+
+SELECT COUNT(*) 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months` 
+
+WHERE start_lat IS NULL 
+
+ 
+
+SELECT COUNT(*) 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months` 
+
+WHERE start_lng IS NULL 
+
+ 
+
+SELECT COUNT(*) 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months` 
+
+WHERE end_lat IS NULL 
+
+ 
+
+SELECT COUNT(*) 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months` 
+
+WHERE end_lng IS NULL 
+
+ 
+
+SELECT COUNT(*) 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months` 
+
+WHERE member_casual IS NULL
+We can see that most of the null values occur in the start_station_name, start_station_id, end_station_name, and end_station_id columns.
+
+Let's see if any starting ids contained null values in both the station name and station id:
+
+SELECT 
+
+  start_station_id, 
+
+  start_station_name 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months` 
+
+WHERE  
+
+    start_station_id is null 
+
+    AND  
+
+    start_station_name is not null
+The results were "There is no data to display", meaning that no rows had both start_station_id and start_station_name as nulls.
+
+So see how many rides contain null values in either the start_station_name or end_station_name:
+
+SELECT  
+
+    COUNT(ride_id) 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months` 
+
+WHERE  
+
+    end_station_name is null 
+
+    OR start_station_name is null
+This showed that 1,006,761 ride ids contain null values in either start or end station names.
+
+Before we remove the null rows, I calculated the percentage of null rows would be removed from the total number of rows.
+
+SELECT  
+
+  CONCAT((1006761/ COUNT(ride_id)) * 100, "%") 
+
+FROM `exalted-iridium-363822.Bikesharing.data12months`
+This shows that 17.99% of the rides contain null values which we will be removing as part of our cleaning process.
+
+Before we remove any rows with nulls, let's see how many rows we will be left with:
+
+SELECT COUNT (ride_id) 
+
+FROM exalted-iridium-363822.Bikesharing.data12months  
+
+WHERE start_station_name is not NULL  
+
+ OR end_station_name is not NULL;
+Once we remove the nulls, we will be left with 4,588,302 rows.
+
+Now I wanted to check to see if there are any duplicate rows. Since ride_id is the primary key, let's see how many unique ride-id's there are:
+
+SELECT DISTINCT ride_id 
+
+FROM exalted-iridium-363822.Bikesharing.data12months 
+
+WHERE start_station_name is not NULL 
+
+  AND end_station_name is not NULL;
+There are 4,588,302 rows, which is the same amount of rows we had above, meaning there are no duplicate ride-ids.
+
+Now let's make sure that there are only 2 types of cyclists: member or casual:
+
+SELECT DISTINCT member_casual 
+
+FROM exalted-iridium-363822.Bikesharing.data12months 
+
+WHERE start_station_name is not NULL 
+
+  AND end_station_name is not NULL;
+There result shows only 2 member types, which is what we expected: "member" and "casual".
+
+I also wanted to check how many rideable types there are, to make sure there were no inaccurate records:
+
+SELECT DISTINCT rideable_type 
+
+FROM exalted-iridium-363822.Bikesharing.data12months 
+
+WHERE start_station_name is not NULL 
+
+  AND end_station_name is not NULL
+The results show 3 bike types, which is again what we expected: classic_bike, electric_bike, docked_bike.
+
+Now that I have checked for duplicate entries and nulls we need to remove, I created a new table (called "start_end") that excludes those null rows so I don't have to
+keep creating the same queries removing them. I also added columns isolating the times from started_at and ended_at using EXTRACT. The new columns were called 
+start_time and end_time.
+
+CREATE TABLE exalted-iridium-363822.Bikesharing.start_end AS 
+
+SELECT  
+
+ride_id, 
+
+rideable_type, 
+
+started_at, 
+
+ended_at, 
+
+start_station_name, 
+
+start_station_id, 
+
+end_station_name, 
+
+end_station_id, 
+
+start_lat, 
+
+start_lng, 
+
+member_casual, 
+
+end_lat, 
+
+end_lng, 
+
+EXTRACT(time from started_at) AS start_time, 
+
+EXTRACT(time from ended_at) AS end_time, 
+
+FROM exalted-iridium-363822.Bikesharing.data12months 
+
+WHERE  start_station_name is not NULL   
+
+ AND end_station_name is not NULL
+4. ANALYZE
+Now we can begin analayzing the data and creating new tables with information we need.
+
+BigQuery has a limitation on updating new columns (I can create them, I just can't "Alter" them) using their free tier, so I had to create a new table again 
+(called "datediff") to calculate the ride lengths/i.e. difference between the start and end times, in minutes (column called "diff"):
+
+CREATE TABLE exalted-iridium-363822.Bikesharing.datediff AS 
+
+SELECT 
+
+ride_id, 
+
+rideable_type, 
+
+started_at, 
+
+ended_at, 
+
+start_station_name, 
+
+start_station_id, 
+
+end_station_name, 
+
+end_station_id, 
+
+start_lat, 
+
+start_lng, 
+
+end_lat, 
+
+end_lng, 
+
+member_casual, 
+
+start_time, 
+
+end_time, 
+
+DATE_DIFF(ended_at, started_at, minute) AS diff 
+
+FROM exalted-iridium-363822.Bikesharing.start_end
+I then wanted to check if there were any durations ("diff" column) that are less than or equal to 0 or** greater than 1440**. Any entries less than or equal to 0 
+means that end time is earlier than start time, which is not possible. And any entries greater than 1440 (i.e. 1440 mins = 24 hours) means the bike was out longer 
+that 24 hours, which cannot occur because bikes are only rented for up to a day.
+
+SELECT COUNT(diff) 
+
+FROM exalted-iridium-363822.Bikesharing.datediff 
+
+WHERE diff <= 0 
+
+AND diff > 1440
+There were 59,122 rides that contained lest than or equal to 0 or over 24 hours of ride length (diff).
+
+Now I will create another new table (called "date_diff_cleaned") with the cleaned ride lengths, including only ones >= 0 or <= 1440.
+
+CREATE TABLE exalted-iridium-363822.Bikesharing.date_diff_cleaned AS 
+
+SELECT 
+
+ride_id, 
+
+rideable_type, 
+
+started_at, 
+
+ended_at, 
+
+start_station_name, 
+
+start_station_id, 
+
+end_station_name, 
+
+end_station_id, 
+
+start_lat, 
+
+start_lng, 
+
+end_lat, 
+
+end_lng, 
+
+member_casual, 
+
+start_time, 
+
+end_time, 
+
+diff, 
+
+FROM exalted-iridium-363822.Bikesharing.datediff 
+
+WHERE diff >= 0 
+
+AND diff <= 1440
+Again, because of BigQuery's limitation on updating new columns I want to create, I instead created another new table with the cleaned ride lengths (called 
+"monthdatediff") using the CASE function and EXTRACT to create columns extracting the date of the week and month per each ride.
+
+CREATE TABLE exalted-iridium-363822.Bikesharing.monthdatediff AS 
+
+SELECT 
+
+ride_id, 
+
+rideable_type, 
+
+started_at, 
+
+ended_at, 
+
+start_station_name, 
+
+start_station_id, 
+
+end_station_name, 
+
+end_station_id, 
+
+start_lat, 
+
+start_lng, 
+
+end_lat, 
+
+end_lng, 
+
+member_casual, 
+
+start_time, 
+
+end_time, 
+
+diff, 
+
+  CASE 
+
+  WHEN EXTRACT(DAYOFWEEK FROM started_at) = 1 THEN 'Sun' 
+
+  WHEN EXTRACT(DAYOFWEEK FROM started_at) = 2 THEN 'Mon' 
+
+  WHEN EXTRACT(DAYOFWEEK FROM started_at) = 3 THEN 'Tues' 
+
+  WHEN EXTRACT(DAYOFWEEK FROM started_at) = 4 THEN 'Wed' 
+
+  WHEN EXTRACT(DAYOFWEEK FROM started_at) = 5 THEN 'Thur' 
+
+  WHEN EXTRACT(DAYOFWEEK FROM started_at) = 6 THEN 'Fri' 
+
+  ELSE'Sat'  
+
+  END AS day_of_week, 
+
+  CASE 
+
+  WHEN EXTRACT(MONTH FROM started_at) = 1 THEN 'Jan' 
+
+  WHEN EXTRACT(MONTH FROM started_at) = 2 THEN 'Feb' 
+
+  WHEN EXTRACT(MONTH FROM started_at) = 3 THEN 'Mar' 
+
+  WHEN EXTRACT(MONTH FROM started_at) = 4 THEN 'Apr' 
+
+  WHEN EXTRACT(MONTH FROM started_at) = 5 THEN 'May' 
+
+  WHEN EXTRACT(MONTH FROM started_at) = 6 THEN 'Jun' 
+
+  WHEN EXTRACT(MONTH FROM started_at) = 7 THEN 'July' 
+
+  WHEN EXTRACT(MONTH FROM started_at) = 8 THEN 'Aug' 
+
+  WHEN EXTRACT(MONTH FROM started_at) = 9 THEN 'Sept' 
+
+  WHEN EXTRACT(MONTH FROM started_at) = 10 THEN 'Oct' 
+
+  WHEN EXTRACT(MONTH FROM started_at) = 11 THEN 'Nov' 
+
+  ELSE 'Dec' 
+
+  END AS month, 
+
+FROM exalted-iridium-363822.Bikesharing.date_diff_cleaned
+Now let's figure out some stats comparing casual and member riders:
+
+SELECT 
+
+AVG(diff) AS average_duration 
+
+FROM exalted-iridium-363822.Bikesharing.monthdatediff 
+
+WHERE member_casual = "casual"
+SELECT  
+
+AVG(diff) AS average_duration  
+
+FROM exalted-iridium-363822.Bikesharing.monthdatediff  
+
+WHERE member_casual = "member"
+We see the average ride length for casual riders is 32.04 minutes, and 12.74 minutes for members.
+
+I analyzed a few more metrics for the different types of riders:
+
+SELECT  
+
+MAX(diff) AS max_duration  
+
+FROM exalted-iridium-363822.Bikesharing.monthdatediff  
+
+WHERE member_casual = "casual"
+SELECT 
+
+MAX(diff) AS max_duration 
+
+FROM exalted-iridium-363822.Bikesharing.month_day_diff 
+
+WHERE member_casual = "member"
+SELECT COUNT(member_casual),  
+
+  day_of_week  
+
+FROM exalted-iridium-363822.Bikesharing.monthdatediff  
+
+WHERE member_casual = "casual"   
+
+GROUP BY day_of_week
+SELECT COUNT(member_casual),  
+
+  day_of_week  
+
+FROM exalted-iridium-363822.Bikesharing.monthdatediff  
+
+WHERE member_casual = "member"   
+
+GROUP BY day_of_week
+SELECT COUNT(member_casual),  
+
+  month  
+
+FROM exalted-iridium-363822.Bikesharing.monthdatediff  
+
+WHERE member_casual = "casual"   
+
+GROUP BY month
+SELECT COUNT(member_casual),  
+
+  month  
+
+FROM exalted-iridium-363822.Bikesharing.monthdatediff  
+
+WHERE member_casual = "member"   
+
+GROUP BY month
+SELECT COUNT(member_casual),  
+
+  rideable_type  
+
+FROM exalted-iridium-363822.Bikesharing.monthdatediff  
+
+WHERE member_casual = "casual"   
+
+GROUP BY rideable_type
+SELECT COUNT(member_casual),  
+
+  rideable_type  
+
+FROM exalted-iridium-363822.Bikesharing.monthdatediff  
+
+WHERE member_casual = "member"   
+
+GROUP BY rideable_type
+SELECT month, member_casual,  
+
+AVG(diff) AS average_duration  
+
+FROM exalted-iridium-363822.Bikesharing.monthdatediff   
+
+GROUP BY month, member_casual  
+
+ORDER BY member_casual, month
+SELECT member_casual,  
+
+EXTRACT(HOUR FROM started_at) AS time_of_day, COUNT(*) as num_of_rides  
+
+FROM exalted-iridium-363822.Bikesharing.monthdatediff  
+
+GROUP BY member_casual, time_of_day  
+
+ORDER BY num_of_rides DESC
+The results of our analyses show that:
+
+Most popular day with casual riders is Saturday, and least popular is Tuesday. The most popular day for members is  Wednesday, and least popular is Sunday.
+Most poplular month for casual riders is July, and least popular is December. Most popular month for member riders is August, and least is February.
+Both casual and member riders use classic bikes the most. Member riders don't use docked bikes much at all.
+Most book rides for both groups occurs during hours 17, 18, and 16 in order (i.e. 5pm, 6pm, and 4pm).
+5. SHARE
+This step involves sharing the results of our analyses with the stakeholders, using visualizations that easily capture the information we obtained in our SQL queries.
+
+I used Tableau to create a dashboard of my results, which can be found here.
+
+6. ACT
+Now that the project is complete, how can we answer the business questions, and recommend next steps for our stakeholders.
+
+We can come back to our questions from Phase 1:
+
+How do annual members and casual riders use Cyclistic bikes differently?
+Why would casual riders buy Cyclistic annual memberships?
+How can Cyclistic use digital media to influence casual riders to become members?
+With the analyses we completed, we can see that both casual and member riders are more active in the summer months, compared to the winter months. And both groups of 
+riders are more active during the early evening hours, between 4pm and 6pm.
